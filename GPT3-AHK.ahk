@@ -1,18 +1,18 @@
-﻿; AutoHotkey script that enables you to use GPT3 in any input field on your computer
+; AutoHotkey script that enables you to use GPT3 in any input field on your computer
 
 ; -- Configuration --
 #SingleInstance  ; Allow only one instance of this script to be running.
 
 ; This is the hotkey used to autocomplete prompts
-HOTKEY_AUTOCOMPLETE = #o  ; Win+o
+; HOTKEY_AUTOCOMPLETE = #o  ; Win+o
 ; This is the hotkey used to edit text
-HOTKEY_EDIT = #+o  ; Win+shift+o
+; HOTKEY_EDIT = #+o  ; Win+shift+o
 ; Models settings
 global MODEL_ENDPOINT := "https://api.openai.com/v1/chat/completions"
-global MODEL_AUTOCOMPLETE_ID := "gpt-3.5-turbo"
+global MODEL_AUTOCOMPLETE_ID := "gpt-4o"
 CUSTOM_MODEL_ENDPOINT := "http://0.0.0.0:8000/chat/completions"
 CUSTOM_MODEL_ID := "together_ai/togethercomputer/llama-2-70b-chat"
-MODEL_AUTOCOMPLETE_MAX_TOKENS := 200
+MODEL_AUTOCOMPLETE_MAX_TOKENS := 1000
 MODEL_AUTOCOMPLETE_TEMP := 0.8
 
 ; -- Initialization --
@@ -33,10 +33,8 @@ Menu, Tray, Add, Select LLM, :LLMMenu
 Menu, Tray, Add  ; Creates a separator line.
 Menu, Tray, NoStandard
 Menu, Tray, Standard
-
-Hotkey, %HOTKEY_AUTOCOMPLETE%, AutocompleteFcn
-Hotkey, %HOTKEY_EDIT%, InstructFcn
-OnExit("ExitFunc")
+; Hotkey, %HOTKEY_AUTOCOMPLETE%, AutocompleteFcn
+; Hotkey, %HOTKEY_EDIT%, InstructFcn
 
 IfNotExist, settings.ini     
 {
@@ -57,6 +55,23 @@ Else
 }
 global API_KEY := OPENAI_API_KEY
 
+; Define the custom menu
+Menu, MyCustomMenu, Add, 翻成中文, FunctionA
+Menu, MyCustomMenu, Add, 修正文法及錯字, FunctionB
+Menu, MyCustomMenu, Add, 翻成英文, FunctionC
+
+; Hotkey to trigger the menu on Ctrl + Right Mouse Button
+^RButton::
+    ; Get the position of the mouse cursor
+    global X, Y  ; 定義全局變數
+    MouseGetPos, X, Y
+    ; Show the custom menu at the cursor position
+    Menu, MyCustomMenu, Show, %X%, %Y%
+return
+
+OnExit("ExitFunc")
+
+
 SelectLLMHandler:
    if (A_ThisMenuItem = "GPT3") {
       API_KEY := OPENAI_API_KEY
@@ -74,37 +89,87 @@ SelectLLMHandler:
    Return
 
 ; -- Main commands --
-; Edit the phrase
-InstructFcn: 
-   GetText(CutText, "Cut")
-   InputBox, UserInput, Text to edit "%CutText%", Enter an instruction, , 270, 145
-   if ErrorLevel {
-      PutText(CutText)
-   }else{
-      url := MODEL_ENDPOINT
-      body := {}
-      body.model := MODEL_AUTOCOMPLETE_ID ; ID of the model to use.
-      body.messages := [{"role": "user", "content": UserInput . CutText}] ; The text to edit
-      body.max_tokens := MODEL_AUTOCOMPLETE_MAX_TOKENS ; The maximum number of tokens to generate in the completion.
-      body.temperature := MODEL_AUTOCOMPLETE_TEMP + 0 ; Sampling temperature to use 
-      headers := {"Content-Type": "application/json", "Authorization": "Bearer " . API_KEY}
-      TrayTip, GPT3-AHK, Asking ChatGPT...
-      SetSystemCursor()
-      response := http.POST(url, JSON.Dump(body), headers, {Object:true, Encoding:"UTF-8"})
-      obj := JSON.Load(response.Text)
-      PutText(obj.choices[1].message.content, "")
-      RestoreCursors()
-      TrayTip
-   }
-   Return   
 
-; Auto-complete the phrase 
-AutocompleteFcn:
+; Function to show the GUI with the response
+ShowResponseGui(responseText, chatMod)
+{
+    global MyEdit  ; 確保 MyEdit 是全局變量
+    Gui, Color, 85ddda
+    ; Gui, Font, s14
+     Gui, Font, s14 , 微軟正黑體   ; 改大字體
+    ;  Gui, Font, s14 , Gen Jyuu Gothic Monospace Normal  ; 改大字體
+    Gui, Add, Edit, w600 h400 vMyEdit ReadOnly, 
+    GuiControl, , MyEdit, %responseText%
+    Gui, Show, x%X% y%Y% w630 h420, %chatMod% says
+    return
+
+    GuiClose:
+    Gui, Destroy  ; 銷毀 GUI 窗口和相關變數
+    return
+}
+
+
+
+; Function A 翻成中文
+FunctionA:
    GetText(CopiedText, "Copy")
+   text2translate := "translate the following text to zh-tw -- " CopiedText
    url := MODEL_ENDPOINT
    body := {}
    body.model := MODEL_AUTOCOMPLETE_ID ; ID of the model to use.   
-   body.messages := [{"role": "user", "content": CopiedText}] ; The prompt to generate completions for
+   body.messages := [{"role": "user", "content": text2translate}] ; The prompt to generate completions for
+   body.max_tokens := MODEL_AUTOCOMPLETE_MAX_TOKENS ; The maximum number of tokens to generate in the completion.
+   body.temperature := MODEL_AUTOCOMPLETE_TEMP + 0 ; Sampling temperature to use 
+   headers := {"Content-Type": "application/json", "Authorization": "Bearer " . API_KEY}
+   TrayTip, GPT3-AHK, Asking ChatGPT...
+   SetSystemCursor()
+   response := http.POST(url, JSON.Dump(body), headers, {Object:true, Encoding:"UTF-8"})
+; ======vvv Debug vvvvvv=======
+; 檢查並創建目標目錄
+targetDir := "C:\temp"
+if !FileExist(targetDir)
+{
+    FileCreateDir, %targetDir%
+}
+; 將 response.Text 內容寫入到文件中
+targetFile := targetDir "\response001.txt"
+     ; 刪除現有的 test.txt 文件
+    FileDelete, % targetFile
+; FileAppend, % response.Headers, % targetFile
+; FileAppend, % response.Status, % targetFile
+; FileAppend, % response.Text, % targetFile
+; msgbox, % response.Text
+; msgbox, % "Status Code: " response.Status "`nResponse Text saved to: " targetFile
+for key, value in response
+{
+    FileAppend, %key%: %value%`n, %targetFile%
+}
+
+; msgbox, The response has been saved to %targetFile%
+; ======^^^ Debug ^^^=======
+   obj := JSON.Load(response.Text)
+   ans := obj.choices[1].message.content
+   mod := obj.model
+    ; Show the GUI with the response
+    ; msgbox, %text2translate%
+    ; msgbox, %url%
+    ; msgbox, %API_KEY%
+    ; msgbox, %mod%
+    ShowResponseGui(ans, mod)
+
+   RestoreCursors()   
+   TrayTip
+   Return
+
+
+; Function B 修正文法及錯字
+FunctionB:
+   GetText(CopiedText, "Copy")
+   text2corrent := "Help me check the grammar and spelling of the following sentences, and output the corrected sentences. -- " CopiedText
+   url := MODEL_ENDPOINT
+   body := {}
+   body.model := MODEL_AUTOCOMPLETE_ID ; ID of the model to use.   
+   body.messages := [{"role": "user", "content": text2corrent}] ; The prompt to generate completions for
    body.max_tokens := MODEL_AUTOCOMPLETE_MAX_TOKENS ; The maximum number of tokens to generate in the completion.
    body.temperature := MODEL_AUTOCOMPLETE_TEMP + 0 ; Sampling temperature to use 
    headers := {"Content-Type": "application/json", "Authorization": "Bearer " . API_KEY}
@@ -112,10 +177,39 @@ AutocompleteFcn:
    SetSystemCursor()
    response := http.POST(url, JSON.Dump(body), headers, {Object:true, Encoding:"UTF-8"})
    obj := JSON.Load(response.Text)
-   PutText(obj.choices[1].message.content, "AddSpace")
+   ans := obj.choices[1].message.content
+   mod := obj.model
+    ; Show the GUI with the response
+    ShowResponseGui(ans, mod)
+
    RestoreCursors()   
    TrayTip
    Return
+
+; Function C 翻成英文
+FunctionC:
+   GetText(CopiedText, "Copy")
+   text2eng := "translate the following text to English -- " CopiedText
+   url := MODEL_ENDPOINT
+   body := {}
+   body.model := MODEL_AUTOCOMPLETE_ID ; ID of the model to use.   
+   body.messages := [{"role": "user", "content": text2eng}] ; The prompt to generate completions for
+   body.max_tokens := MODEL_AUTOCOMPLETE_MAX_TOKENS ; The maximum number of tokens to generate in the completion.
+   body.temperature := MODEL_AUTOCOMPLETE_TEMP + 0 ; Sampling temperature to use 
+   headers := {"Content-Type": "application/json", "Authorization": "Bearer " . API_KEY}
+   TrayTip, GPT3-AHK, Asking ChatGPT...
+   SetSystemCursor()
+   response := http.POST(url, JSON.Dump(body), headers, {Object:true, Encoding:"UTF-8"})
+   obj := JSON.Load(response.Text)
+   ans := obj.choices[1].message.content
+   mod := obj.model
+    ; Show the GUI with the response
+    ShowResponseGui(ans, mod)
+
+   RestoreCursors()   
+   TrayTip
+   Return
+
 
 ; -- Auxiliar functions --
 ; Copies the selected text to a variable while preserving the clipboard.
@@ -154,6 +248,7 @@ PutText(MyText, Option = "")
    If (Option == "AddSpace")
    {
       Send {Right}
+      Send {end}
       Send {Space}
    }
    Send ^v
@@ -161,6 +256,7 @@ PutText(MyText, Option = "")
    Clipboard := SavedClip
    Return
 }   
+
 
 ; Change system cursor 
 SetSystemCursor()
