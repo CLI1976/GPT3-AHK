@@ -1,3 +1,11 @@
+# My Forked Project
+
+This project is a fork of [original-repo]([https://github.com/original-author/original-repo](https://github.com/htadashi/GPT3-AHK)) by [htadashi](https://github.com/htadashi).
+
+## License
+
+This project is licensed under the same terms as the original project.
+
 ## 中文說明
 - 修改自[htadashi/GPT3-AHK]https://github.com/htadashi/GPT3-AHK
 - 找了一圈是我唯一找到可以用AHK v1.1啟動的chatGPT
