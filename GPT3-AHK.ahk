@@ -1,4 +1,4 @@
-; AutoHotkey script that enables you to use GPT3 in any input field on your computer
+﻿; AutoHotkey script that enables you to use GPT3 in any input field on your computer
 
 ; -- Configuration --
 #SingleInstance  ; Allow only one instance of this script to be running.
@@ -63,8 +63,8 @@ Menu, MyCustomMenu, Add, 翻成英文, FunctionC
 ; Hotkey to trigger the menu on Ctrl + Right Mouse Button
 ^RButton::
     ; Get the position of the mouse cursor
-    global X, Y  ; 定義全局變數
-    MouseGetPos, X, Y
+    ; global X, Y  ; 定義全局變數
+      MouseGetPos, X, Y
     ; Show the custom menu at the cursor position
     Menu, MyCustomMenu, Show, %X%, %Y%
 return
@@ -94,20 +94,23 @@ SelectLLMHandler:
 ShowResponseGui(responseText, chatMod)
 {
     global MyEdit  ; 確保 MyEdit 是全局變量
-    Gui, Color, 85ddda
+    CoordMode, Mouse , Screen
+    MouseGetPos, X1, Y1
+        Gui, Color, 85ddda
     ; Gui, Font, s14
      Gui, Font, s14 , 微軟正黑體   ; 改大字體
     ;  Gui, Font, s14 , Gen Jyuu Gothic Monospace Normal  ; 改大字體
     Gui, Add, Edit, w600 h400 vMyEdit ReadOnly, 
     GuiControl, , MyEdit, %responseText%
-    Gui, Show, x%X% y%Y% w630 h420, %chatMod% says
+    Gui, Show, x%X1% y%Y1% w630 h420, %chatMod% says
     return
+
+
+}
 
     GuiClose:
     Gui, Destroy  ; 銷毀 GUI 窗口和相關變數
     return
-}
-
 
 
 ; Function A 翻成中文
