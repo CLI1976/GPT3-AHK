@@ -1,8 +1,6 @@
 # GPT3-AHK
 An [AutoHotKey v1.1](https://www.autohotkey.com/) script that enables you to use [GPT3.5 turbo or GPT-4o](https://platform.openai.com/docs/models/gpt-3) and other LLM models(not tested) in any input field on your computer.
 
-![demo](https://user-images.githubusercontent.com/2355491/208573555-bb764bc9-2694-4db7-8c74-7250439ae105.gif)
-
 ## Installation and configuration
 
 1. You must have [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) 
