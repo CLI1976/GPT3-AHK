@@ -9,7 +9,7 @@
 ; HOTKEY_EDIT = #+o  ; Win+shift+o
 ; Models settings
 global MODEL_ENDPOINT := "https://api.openai.com/v1/chat/completions"
-global MODEL_AUTOCOMPLETE_ID := "gpt-4o"
+global MODEL_AUTOCOMPLETE_ID := "gpt-4o-mini"
 CUSTOM_MODEL_ENDPOINT := "http://0.0.0.0:8000/chat/completions"
 CUSTOM_MODEL_ID := "together_ai/togethercomputer/llama-2-70b-chat"
 MODEL_AUTOCOMPLETE_MAX_TOKENS := 1000
@@ -26,8 +26,9 @@ I_Icon = GPT3-AHK.ico
 IfExist, %I_Icon%
 Menu, Tray, Icon, %I_Icon%
 ; Create custom menus
-Menu, LLMMenu, Add, GPT3, SelectLLMHandler
-Menu, LLMMenu, Add, GPT4, SelectLLMHandler
+Menu, LLMMenu, Add, GPT3.5 turbo, SelectLLMHandler
+Menu, LLMMenu, Add, GPT4o, SelectLLMHandler
+Menu, LLMMenu, Add, GPT4o mini, SelectLLMHandler
 Menu, LLMMenu, Add, Custom, SelectLLMHandler
 Menu, Tray, Add, Select LLM, :LLMMenu  
 Menu, Tray, Add  ; Creates a separator line.
@@ -73,14 +74,18 @@ OnExit("ExitFunc")
 
 
 SelectLLMHandler:
-   if (A_ThisMenuItem = "GPT3") {
+   if (A_ThisMenuItem = "GPT3.5 turbo") {
       API_KEY := OPENAI_API_KEY
       MODEL_ENDPOINT := "https://api.openai.com/v1/chat/completions"
       MODEL_AUTOCOMPLETE_ID := "gpt-3.5-turbo"	
-   } else if (A_ThisMenuItem = "GPT4") {
+   } else if (A_ThisMenuItem = "GPT4o") {
       API_KEY := OPENAI_API_KEY
       MODEL_ENDPOINT := "https://api.openai.com/v1/chat/completions"
       MODEL_AUTOCOMPLETE_ID := "gpt-4"
+   } else if (A_ThisMenuItem = "GPT4o mini") {
+      API_KEY := OPENAI_API_KEY
+      MODEL_ENDPOINT := "https://api.openai.com/v1/chat/completions"
+      MODEL_AUTOCOMPLETE_ID := "gpt-4o-mini"
    } else if (A_ThisMenuItem = "Custom") {
       API_KEY := CUSTOM_API_KEY
       MODEL_ENDPOINT := CUSTOM_MODEL_ENDPOINT
