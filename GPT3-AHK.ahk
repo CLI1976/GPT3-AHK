@@ -98,6 +98,10 @@ SelectLLMHandler:
 ; Function to show the GUI with the response
 ShowResponseGui(responseText, chatMod)
 {
+   IfWinExist, ahk_class AutoHotkeyGUI
+   {
+       WinClose
+   }
     global MyEdit  ; 確保 MyEdit 是全局變量
     CoordMode, Mouse , Screen
     MouseGetPos, X1, Y1
