@@ -66,7 +66,7 @@ Menu, MyCustomMenu, Add, 翻成英文, FunctionC
     ; Get the position of the mouse cursor
     ; global X, Y  ; 定義全局變數
       MouseGetPos, X, Y
-    ; Show the custom menu at the cursor position
+    ; 在游標位置顯示自訂選單
     Menu, MyCustomMenu, Show, %X%, %Y%
 return
 
@@ -105,7 +105,10 @@ ShowResponseGui(responseText, chatMod)
     global MyEdit  ; 確保 MyEdit 是全局變量
     CoordMode, Mouse , Screen
     MouseGetPos, X1, Y1
-        Gui, Color, 85ddda
+    ; 計算偏移位置
+    X1 := X1 + 300
+    Y1 := Y1 - 200
+    Gui, Color, 85ddda
     ; Gui, Font, s14
      Gui, Font, s14 , 微軟正黑體   ; 改大字體
     ;  Gui, Font, s14 , Gen Jyuu Gothic Monospace Normal  ; 改大字體
@@ -113,23 +116,20 @@ ShowResponseGui(responseText, chatMod)
     GuiControl, , MyEdit, %responseText%
     Gui, Show, x%X1% y%Y1% w630 h420, %chatMod% says
     return
-
-
 }
 
-    GuiClose:
+GuiClose:
     Gui, Destroy  ; 銷毀 GUI 窗口和相關變數
     return
 
-
-; Function A 翻成中文
-FunctionA:
+FunctionA:  ; Function A 翻成中文
    GetText(CopiedText, "Copy")
-   text2translate := "translate the following text to zh-tw -- " CopiedText
+;    text2translate := "translate the following text to zh-tw -- " CopiedText
    url := MODEL_ENDPOINT
    body := {}
    body.model := MODEL_AUTOCOMPLETE_ID ; ID of the model to use.   
-   body.messages := [{"role": "user", "content": text2translate}] ; The prompt to generate completions for
+   body.messages := [{"role": "system", "content": "你是一位專業的醫療翻譯員，請將接下來的文本翻譯成正式的繁體中文。請確保用詞精確，適合用於醫療報告或相關文檔。"},{"role": "user", "content": CopiedText} ]
+ ;  body.messages := [{"role": "user", "content": text2translate}] ; The prompt to generate completions for
    body.max_tokens := MODEL_AUTOCOMPLETE_MAX_TOKENS ; The maximum number of tokens to generate in the completion.
    body.temperature := MODEL_AUTOCOMPLETE_TEMP + 0 ; Sampling temperature to use 
    headers := {"Content-Type": "application/json", "Authorization": "Bearer " . API_KEY}
@@ -177,11 +177,12 @@ for key, value in response
 ; Function B 修正文法及錯字
 FunctionB:
    GetText(CopiedText, "Copy")
-   text2corrent := "Help me check the grammar and spelling of the following sentences, and output the corrected sentences. -- " CopiedText
+   ; text2corrent := "Help me check the grammar and spelling of the following sentences, and output the corrected sentences. -- " CopiedText
    url := MODEL_ENDPOINT
    body := {}
    body.model := MODEL_AUTOCOMPLETE_ID ; ID of the model to use.   
-   body.messages := [{"role": "user", "content": text2corrent}] ; The prompt to generate completions for
+ body.messages := [{"role": "system", "content": "你是一位專業的英文語言校對員，請檢查我接下來提供的英文句子，並修改文法或拼字錯誤。輸出修改後的句子，並簡單標註修改的地方。"},{"role": "user", "content": CopiedText} ] 
+   ; body.messages := [{"role": "user", "content": text2corrent}] ; The prompt to generate completions for
    body.max_tokens := MODEL_AUTOCOMPLETE_MAX_TOKENS ; The maximum number of tokens to generate in the completion.
    body.temperature := MODEL_AUTOCOMPLETE_TEMP + 0 ; Sampling temperature to use 
    headers := {"Content-Type": "application/json", "Authorization": "Bearer " . API_KEY}
@@ -201,11 +202,12 @@ FunctionB:
 ; Function C 翻成英文
 FunctionC:
    GetText(CopiedText, "Copy")
-   text2eng := "translate the following text to English -- " CopiedText
+   ; text2eng := "translate the following text to English -- " CopiedText
    url := MODEL_ENDPOINT
    body := {}
    body.model := MODEL_AUTOCOMPLETE_ID ; ID of the model to use.   
-   body.messages := [{"role": "user", "content": text2eng}] ; The prompt to generate completions for
+   body.messages := [{"role": "system", "content": "你是一位專業的翻譯員，請將接下來的中文句子翻譯為日常使用的英文對話，不需要太正式，但要確保表達清楚、自然。"},{"role": "user", "content": CopiedText} ] 
+   ; body.messages := [{"role": "user", "content": text2eng}] ; The prompt to generate completions for
    body.max_tokens := MODEL_AUTOCOMPLETE_MAX_TOKENS ; The maximum number of tokens to generate in the completion.
    body.temperature := MODEL_AUTOCOMPLETE_TEMP + 0 ; Sampling temperature to use 
    headers := {"Content-Type": "application/json", "Authorization": "Bearer " . API_KEY}
