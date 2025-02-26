@@ -1,3 +1,8 @@
+# 
+** This repository is **no longer updated or maintained**
+**Alternatively, a similar functionality script (based on AHK ver2.0) is also available - See details at the link below**
+- <i class="fa fa-file-text"></i> [ai-translator](https://github.com/CLI1976/ai-translator)
+
 # My Forked Project
 
 This project is a fork of [original-repo]([https://github.com/original-author/original-repo](https://github.com/htadashi/GPT3-AHK)) by [htadashi](https://github.com/htadashi).
