@@ -1,4 +1,4 @@
-# ** This repository is **no longer updated or maintained **
+# This repository is no longer updated or maintained 
 -  ** Alternatively, a similar functionality script (based on AHK ver2.0) is also available - See details at the link below **
 -  <i class="fa fa-file-text"></i> [ai-translator](https://github.com/CLI1976/ai-translator)
 
